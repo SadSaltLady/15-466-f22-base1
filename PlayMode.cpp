@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
+#define HURT_PALETTE 4
 
 PlayMode::PlayMode() {
 	//TODO:
@@ -51,7 +52,7 @@ PlayMode::PlayMode() {
 	//use sprite 32 as a "player":
 	ppu.tile_table[32].bit0 = {
 		0b01111110,
-		0b11111111,
+		0b11111111,	
 		0b11111111,
 		0b11111111,
 		0b11111111,
@@ -62,8 +63,8 @@ PlayMode::PlayMode() {
 	ppu.tile_table[32].bit1 = {
 		0b00000000,
 		0b00000000,
-		0b00011000,
-		0b00100100,
+		0b00111100,
+		0b00000000,
 		0b00000000,
 		0b00100100,
 		0b00000000,
@@ -86,10 +87,26 @@ PlayMode::PlayMode() {
 		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
 	};
 
-	//used for the player:
+	//used for the player one sprite:
 	ppu.palette_table[7] = {
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
 		glm::u8vec4(0xff, 0xff, 0x00, 0xff),
+		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	};
+
+	//used for the player two sprite:
+	ppu.palette_table[5] = {
+		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+		glm::u8vec4(0x00, 0x00, 0xff, 0xff),
+		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	};
+
+	//used for the player hurt sprite:
+	ppu.palette_table[4] = {
+		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+		glm::u8vec4(0xff, 0x00, 0x00, 0xff),
 		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
 		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
 	};
@@ -102,45 +119,90 @@ PlayMode::PlayMode() {
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
 	};
 
+	//Initialize the players:
+	//again, weapon_idx is player + 1
+	player0.sprite_idx = 0;
+	player0.weapon_idx = 1;
+	player0.color_index = 7; 
+	player0.weapon_color = 5;
+
+	player1.sprite_idx = 2;
+	player1.weapon_idx = 3;
+	player1.color_index = 7;
+	player1.weapon_color = 5;
 }
 
 PlayMode::~PlayMode() {
 }
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
-
+	//Controlls player movement, p0 = player one, p1 = player 2
+	//player1 uses arrow keys to control movement
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_LEFT) {
-			left.downs += 1;
-			left.pressed = true;
+			p0_left.downs += 1;
+			p0_left.pressed = true;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
-			right.downs += 1;
-			right.pressed = true;
+			p0_right.downs += 1;
+			p0_right.pressed = true;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
-			up.downs += 1;
-			up.pressed = true;
+			p0_up.downs += 1;
+			p0_up.pressed = true;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
-			down.downs += 1;
-			down.pressed = true;
+			p0_down.downs += 1;
+			p0_down.pressed = true;
+			return true;
+		} //player two uses WASD to control movement 
+		else if (evt.key.keysym.sym == SDLK_a) {
+			p1_left.downs += 1;
+			p1_left.pressed = true;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_d) {
+			p1_right.downs += 1;
+			p1_right.pressed = true;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_w) {
+			p1_up.downs += 1;
+			p1_up.pressed = true;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_s) {
+			p1_down.downs += 1;
+			p1_down.pressed = true;
 			return true;
 		}
+		
 	} else if (evt.type == SDL_KEYUP) {
+		//Player one
 		if (evt.key.keysym.sym == SDLK_LEFT) {
-			left.pressed = false;
+			p0_left.pressed = false;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
-			right.pressed = false;
+			p0_right.pressed = false;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
-			up.pressed = false;
+			p0_up.pressed = false;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
-			down.pressed = false;
+			p0_down.pressed = false;
 			return true;
-		}
+		//Player 2
+		} else if (evt.key.keysym.sym == SDLK_a) {
+			p1_left.pressed = false;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_d) {
+			p1_right.pressed = false;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_w) {
+			p1_up.pressed = false;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_s) {
+			p1_down.pressed = false;
+			return true;
+		} //DEBUG functionalities 
+
 	}
 
 	return false;
@@ -152,18 +214,72 @@ void PlayMode::update(float elapsed) {
 	// (will be used to set background color)
 	background_fade += elapsed / 10.0f;
 	background_fade -= std::floor(background_fade);
+	//reset directions 
+	player0.direction.x = 0;
+	player0.direction.y = 0;
+	player1.direction.x = 0;
+	player1.direction.y = 0;
+
 
 	constexpr float PlayerSpeed = 30.0f;
-	if (left.pressed) player_at.x -= PlayerSpeed * elapsed;
-	if (right.pressed) player_at.x += PlayerSpeed * elapsed;
-	if (down.pressed) player_at.y -= PlayerSpeed * elapsed;
-	if (up.pressed) player_at.y += PlayerSpeed * elapsed;
+
+	auto movement_handler = [&PlayerSpeed] (Player &player, Button &left, Button &right, Button &up, Button &down, float elapsed) {
+		//handle movement
+		if (left.pressed) {
+			player.direction.x -= 1.0f;
+		}
+		if (right.pressed) {
+			player.direction.x += 1.0f;
+		}
+		if (up.pressed) {
+			player.direction.y += 1.0f;
+		}
+		if (down.pressed) {
+			player.direction.y -= 1.0f;
+		}
+		//normalize direction
+		if (glm::length(player.direction) > 0.0f) {
+			player.direction = glm::normalize(player.direction);
+		}
+		//move player
+		player.at += player.direction * PlayerSpeed * elapsed;
+		//move weapon 
+		if ( left.pressed || right.pressed || up.pressed || down.pressed) {
+			player.weapon_at = player.at + 8.0f * player.direction;
+		}
+		//don't let player move off screen
+		/*
+		player.position.x = std::max(player.position.x, 0.0f);
+		player.position.x = std::min(player.position.x, float(CourtSize.x));
+		player.position.y = std::max(player.position.y, 0.0f);
+		player.position.y = std::min(player.position.y, float(CourtSize.y));
+		*/
+	};
+	movement_handler(player0, p0_left, p0_right, p0_up, p0_down, elapsed);
+	movement_handler(player1, p1_left, p1_right, p1_up, p1_down, elapsed);
+
+	//check for collisions
+	auto collision_handler = [&](Player &attack, Player &defend) {
+		//check if attack is in range of defend
+		if (glm::distance(attack.weapon_at, defend.at) < 8.0f) {
+			defend.hurt = true;
+		} else {
+			defend.hurt = false;
+		}
+	};
+	collision_handler(player0, player1);
+	collision_handler(player1, player0);
 
 	//reset button press counters:
-	left.downs = 0;
-	right.downs = 0;
-	up.downs = 0;
-	down.downs = 0;
+	p0_left.downs = 0;
+	p0_right.downs = 0;
+	p0_up.downs = 0;
+	p0_down.downs = 0;
+
+	p1_left.downs = 0;
+	p1_right.downs = 0;
+	p1_up.downs = 0;
+	p1_down.downs = 0;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
@@ -186,21 +302,44 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		}
 	}
 
-	//background scroll:
-	ppu.background_position.x = int32_t(-0.5f * player_at.x);
-	ppu.background_position.y = int32_t(-0.5f * player_at.y);
+	//background scroll: 
+	//TODO: not sure how to handle this yet....
+	ppu.background_position.x = int32_t(-0.5f * player1.at.x);
+	ppu.background_position.y = int32_t(-0.5f * player1.at.y);
+	//uncessary but I wanted to write a lambda
+	auto movement_handler = [](Player &player,	PPU466& ppu) {
+		//draw player
+		ppu.sprites[player.sprite_idx].x = int8_t(player.at.x);
+		ppu.sprites[player.sprite_idx].y = int8_t(player.at.y);
+		ppu.sprites[player.sprite_idx].index = 32;
+		uint8_t color = 0;
+		if (player.hurt) 
+		{
+			color = HURT_PALETTE;
+		} else {
+			color = player.color_index;
+		}
+		ppu.sprites[player.sprite_idx].attributes = color;
+		//draw weapon
+		ppu.sprites[player.weapon_idx].x = int8_t(player.weapon_at.x);
+		ppu.sprites[player.weapon_idx].y = int8_t(player.weapon_at.y);
+		ppu.sprites[player.weapon_idx].index = 32;
+		ppu.sprites[player.weapon_idx].attributes = player.weapon_color;
+	};
 
-	//player sprite:
-	ppu.sprites[0].x = int8_t(player_at.x);
-	ppu.sprites[0].y = int8_t(player_at.y);
-	ppu.sprites[0].index = 32;
-	ppu.sprites[0].attributes = 7;
+	movement_handler(player0, ppu);
+	movement_handler(player1, ppu);
 
 	//some other misc sprites:
-	for (uint32_t i = 1; i < 63; ++i) {
+	for (uint32_t i = 4; i < 63; ++i) {
+		/* 
+		* Old Code:
 		float amt = (i + 2.0f * background_fade) / 62.0f;
 		ppu.sprites[i].x = int8_t(0.5f * PPU466::ScreenWidth + std::cos( 2.0f * M_PI * amt * 5.0f + 0.01f * player_at.x) * 0.4f * PPU466::ScreenWidth);
 		ppu.sprites[i].y = int8_t(0.5f * PPU466::ScreenHeight + std::sin( 2.0f * M_PI * amt * 3.0f + 0.01f * player_at.y) * 0.4f * PPU466::ScreenWidth);
+		*/
+		ppu.sprites[i].x = 225;
+		ppu.sprites[i].y = 225;
 		ppu.sprites[i].index = 32;
 		ppu.sprites[i].attributes = 6;
 		if (i % 2) ppu.sprites[i].attributes |= 0x80; //'behind' bit

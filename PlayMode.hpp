@@ -21,13 +21,32 @@ struct PlayMode : Mode {
 	struct Button {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up;
+	} p0_left, p0_right, p0_down, p0_up, p1_left, p1_right, p1_down, p1_up;
 
 	//some weird background animation:
 	float background_fade = 0.0f;
 
-	//player position:
-	glm::vec2 player_at = glm::vec2(0.0f);
+	//This game has two players
+	//Player info tracking:
+	//I could put the directions here but lazy code
+	struct Player {
+		//Player position
+		glm::vec2 at = glm::vec2(0.0f, 0.0f);
+		//Player movement direction
+		glm::vec2 direction = glm::vec2(0.0f, 0.0f);
+		//Pallette index
+		uint8_t color_index = 0;
+		//sprite index
+		uint8_t sprite_idx = 0;
+		//Weapon position
+		glm::vec2 weapon_at = glm::vec2(0.0f, 0.0f);
+		//Weapon sprite is always assumed to be sprite_index + 1
+		uint8_t weapon_idx = 0;
+		//Weapon color
+		uint8_t weapon_color = 0;
+		//status
+		bool hurt = false;
+	}player0, player1;
 
 	//----- drawing handled by PPU466 -----
 

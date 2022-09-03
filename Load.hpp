@@ -15,10 +15,12 @@
  *     glBindVertexArray(main_mesh->vao);
  * }
  *
- * Load<> is built on the add_load_function() call that adds a function to one of several lists of functions that are called after the OpenGL canvas is initialized.
+ * Load<> is built on the add_load_function() call that adds a function to one of 
+ * several lists of functions that are called after the OpenGL canvas is initialized.
  *
  * These functions are grouped by 'tags', which allow some sequencing of calls.
- * (particularly, this is useful for loading large data blobs [e.g. Meshes] before looking up individual elements within them.)
+ * (particularly, this is useful for loading large data blobs [e.g. Meshes] before 
+ * looking up individual elements within them.)
  *
  */
 
