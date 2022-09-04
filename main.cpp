@@ -125,6 +125,7 @@ int main(int argc, char **argv) {
 	};
 	on_resize();
 
+	//DEBUG BUDDY:
 	//This will loop until the current mode is set to null:
 	while (Mode::current) {
 		//every pass through the game loop creates one frame of output

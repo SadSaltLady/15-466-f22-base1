@@ -26,6 +26,7 @@ static std::string get_exe_path() {
 	GetModuleFileName(NULL, buffer, MAX_PATH);
 	std::string ret = buffer;
 	ret = ret.substr(0, ret.rfind('\\'));
+	std::cout << "Windows exe path: " << ret << std::endl;
 	return ret;
 	#elif defined(__linux__)
 	//From: https://stackoverflow.com/questions/933850/how-do-i-find-the-location-of-the-executable-in-c
@@ -59,7 +60,11 @@ static std::string get_exe_path() {
 
 std::string data_path(std::string const &suffix) {
 	static std::string path = get_exe_path(); //cache result of get_exe_path()
+	#if defined(_WIN32)
+	return path + "\\" + suffix;
+	#else
 	return path + "/" + suffix;
+	#endif
 }
 
 /* From Rktcr; to be used eventually!

@@ -46,3 +46,9 @@ How do I get tiles sprites into the game and use them?
             - background layer(16 bit,more details see file)
             - sprite[32 bit], alawys 64 sprite on screen, move off screen to hide
 
+## Implementing the asset pipeline 
+- Use load to load the assets into variables stored in global, or in our case, 
+load into PPU sprite buffers (ideally?)
+- we will need a dynamic look up function to get the path for our resources
+- we will need a function that is able to parse it
+- we need something (Load) to put it in a usable place

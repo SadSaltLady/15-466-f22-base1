@@ -14,6 +14,10 @@
  * void GameMode::draw() {
  *     glBindVertexArray(main_mesh->vao);
  * }
+ * 
+ * in other words, Load < T > is a wrapper around a function that returns a T.
+ * this in term creates an object T, which can ve referenced from a global scope.
+ * 
  *
  * Load<> is built on the add_load_function() call that adds a function to one of 
  * several lists of functions that are called after the OpenGL canvas is initialized.

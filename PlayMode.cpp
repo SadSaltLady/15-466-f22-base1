@@ -9,6 +9,17 @@
 #include <random>
 #define HURT_PALETTE 4
 
+Load < SpriteAtlas > sprite_TERINOS = { LoadTagDefault, [&]() {
+
+	SpriteAtlas *ret = new SpriteAtlas();
+	ret->pathtest = data_path("assets\\test.png");
+	std::vector< glm::u8vec4 > data;
+	glm::uvec2 size = glm::uvec2(8.0f, 8.0f);
+	load_png(ret->pathtest, &size, &data, LowerLeftOrigin);
+	std::cout << "test:" << data[0].r << data[0].g << data[0].b << data[0].a << std::endl;
+	return ret;
+} };
+
 PlayMode::PlayMode() {
 	//TODO:
 	// you *must* use an asset pipeline of some sort to generate tiles.
@@ -17,6 +28,7 @@ PlayMode::PlayMode() {
 	//  make yourself a script that spits out the code that you paste in here
 	//   and check that script into your repository.
 
+	std::cout << sprite_TERINOS->pathtest << std::endl;
 	//Also, *don't* use these tiles in your game:
 
 	{ //use tiles 0-16 as some weird dot pattern thing:

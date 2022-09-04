@@ -1,10 +1,20 @@
 #include "PPU466.hpp"
 #include "Mode.hpp"
+#include "Load.hpp"
+#include "data_path.hpp"
+#include "load_save_png.hpp"
 
 #include <glm/glm.hpp>
 
+#include <string>
 #include <vector>
 #include <deque>
+#include <iostream>
+
+struct SpriteAtlas {
+		int sprite_count = 0;
+		std::string pathtest = "";
+};
 
 struct PlayMode : Mode {
 	PlayMode();
