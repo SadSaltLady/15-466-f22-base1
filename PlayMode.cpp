@@ -6,17 +6,26 @@
 //for glm::value_ptr() :
 #include <glm/gtc/type_ptr.hpp>
 
+//DEBUGS:
+//for glm debug printing:
+#include <glm/gtx/string_cast.hpp>
+
+//for binary debug printing:
+#include <bitset>
+
 #include <random>
 #define HURT_PALETTE 4
 
-Load < SpriteAtlas > sprite_TERINOS = { LoadTagDefault, [&]() {
-
+Load < SpriteAtlas > sprite_master = { LoadTagDefault, [&]() {
+	//create new 
 	SpriteAtlas *ret = new SpriteAtlas();
 	ret->pathtest = data_path("assets\\test.png");
-	std::vector< glm::u8vec4 > data;
 	glm::uvec2 size = glm::uvec2(8.0f, 8.0f);
-	load_png(ret->pathtest, &size, &data, LowerLeftOrigin);
-	std::cout << "test:" << data[0].r << data[0].g << data[0].b << data[0].a << std::endl;
+	//allocate image array
+	ret->images.resize(8);
+	//fill with empty 
+	ret->images.assign(8, std::vector< glm::u8vec4 >());
+	load_png(ret->pathtest, &size, &(ret->images[0]), LowerLeftOrigin);
 	return ret;
 } };
 
@@ -28,7 +37,6 @@ PlayMode::PlayMode() {
 	//  make yourself a script that spits out the code that you paste in here
 	//   and check that script into your repository.
 
-	std::cout << sprite_TERINOS->pathtest << std::endl;
 	//Also, *don't* use these tiles in your game:
 
 	{ //use tiles 0-16 as some weird dot pattern thing:
@@ -60,6 +68,23 @@ PlayMode::PlayMode() {
 			ppu.tile_table[index] = tile;
 		}
 	}
+	//load 8*8 file at sprite_master[master_idex] into ppu.tile_table[tile_index]
+	auto load_single_tile = [&](uint32_t tile_index, uint32_t master_index, PPU466& ppu) {
+		for (uint32_t i = 0; i < 8; i++) {
+			uint8_t bit0 = 0;
+			uint8_t bit1 = 0;
+			for (uint32_t j = 7; j != -1; --j) {
+				const std::vector< glm::u8vec4 > data = (sprite_master->images[master_index]);
+				bit0 |= (data[j + 8 * i].r / uint8_t(255)) << j;
+				bit1 |= (data[j + 8 * i].g / uint8_t(255)) << j;
+			}
+			//std::cout << i << std::endl;
+			//std::cout << std::bitset<8>(bit0) << std::endl;
+			ppu.tile_table[tile_index].bit0[i] = bit0;
+			ppu.tile_table[tile_index].bit1[i] = 0; //bit1;
+		}
+	};
+	load_single_tile(33, 0, ppu);
 
 	//use sprite 32 as a "player":
 	ppu.tile_table[32].bit0 = {
@@ -310,7 +335,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
 		for (uint32_t x = 0; x < PPU466::BackgroundWidth; ++x) {
 			//TODO: make weird plasma thing
-			ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
+			ppu.background[x+PPU466::BackgroundWidth*y] = (1);
 		}
 	}
 
@@ -319,11 +344,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	ppu.background_position.x = int32_t(-0.5f * player1.at.x);
 	ppu.background_position.y = int32_t(-0.5f * player1.at.y);
 	//uncessary but I wanted to write a lambda
-	auto movement_handler = [](Player &player,	PPU466& ppu) {
+	auto player_draw = [](Player &player,	PPU466& ppu) {
 		//draw player
 		ppu.sprites[player.sprite_idx].x = int8_t(player.at.x);
 		ppu.sprites[player.sprite_idx].y = int8_t(player.at.y);
-		ppu.sprites[player.sprite_idx].index = 32;
+		//Set the sprite in the tile table, might make it a varaible
+		ppu.sprites[player.sprite_idx].index = 33;
 		uint8_t color = 0;
 		if (player.hurt) 
 		{
@@ -339,8 +365,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		ppu.sprites[player.weapon_idx].attributes = player.weapon_color;
 	};
 
-	movement_handler(player0, ppu);
-	movement_handler(player1, ppu);
+	player_draw(player0, ppu);
+	player_draw(player1, ppu);
 
 	//some other misc sprites:
 	for (uint32_t i = 4; i < 63; ++i) {
