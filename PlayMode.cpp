@@ -19,13 +19,16 @@
 Load < SpriteAtlas > sprite_master = { LoadTagDefault, [&]() {
 	//create new 
 	SpriteAtlas *ret = new SpriteAtlas();
-	ret->pathtest = data_path("assets\\test.png");
+	//ret->pathtest = data_path("assets\\test.png");
 	glm::uvec2 size = glm::uvec2(8.0f, 8.0f);
 	//allocate image array
 	ret->images.resize(8);
 	//fill with empty 
 	ret->images.assign(8, std::vector< glm::u8vec4 >());
-	load_png(ret->pathtest, &size, &(ret->images[0]), LowerLeftOrigin);
+	//load_png(ret->pathtest, &size, &(ret->images[0]), LowerLeftOrigin);
+	size = glm::uvec2(56.0f, 32.0f);
+	load_png(data_path("assets\\attack_56_32.png"), &size, &(ret->images[1]), LowerLeftOrigin);
+	std::cout << "size of attack_56_32.png: " << ret->images[1].size() << std::endl;
 	return ret;
 } };
 
@@ -68,24 +71,38 @@ PlayMode::PlayMode() {
 			ppu.tile_table[index] = tile;
 		}
 	}
-	//load 8*8 file at sprite_master[master_idex] into ppu.tile_table[tile_index]
-	auto load_single_tile = [&](uint32_t tile_index, uint32_t master_index, PPU466& ppu) {
-		for (uint32_t i = 0; i < 8; i++) {
-			uint8_t bit0 = 0;
-			uint8_t bit1 = 0;
-			for (uint32_t j = 7; j != -1; --j) {
-				const std::vector< glm::u8vec4 > data = (sprite_master->images[master_index]);
-				bit0 |= (data[j + 8 * i].r / uint8_t(255)) << j;
-				bit1 |= (data[j + 8 * i].g / uint8_t(255)) << j;
+	//load 8*8 file starting at sprite_master[master_idex] into ppu.tile_table[tile_index]
+	auto load_single_tile = [&](uint32_t tile_index, uint32_t master_index, uint8_t wid, uint8_t hei, PPU466 &ppu) {
+		//iterate over width and height tiles of the image and read it in 8*8 blocks
+		uint32_t count = 0;
+		for (uint32_t h = hei -1; h != -1; --h) {
+			for (uint32_t w = 0; w < wid ; ++w) {
+				//create new tile
+				PPU466::Tile tile;
+				//iterate over 8*8 pixels of the tile
+				for (uint32_t y = 7; y != -1 ; --y) {
+					uint8_t bit0 = 0;
+					uint8_t bit1 = 0;
+					for (uint32_t x = 7; x != -1; --x) {
+						//get the color of the pixel
+						glm::u8vec4 color = sprite_master->images[master_index][(w * 8 + x) + (h * 8 + y) * 16];
+						//set bits according to color channels
+						bit0 |= (color.r > 0) << x;
+						bit1 |= (color.g > 0) << x;
+					}
+					tile.bit0[y] = bit0;
+					tile.bit1[y] = bit1;
+				}
+				//set the tile in the tile table
+				//ppu.tile_table[tile_index + w + h * wid] = tile;
+				ppu.tile_table[tile_index + count] = tile;
+				++count;
+				std::cout << "count: " << tile_index + count << std::endl;
 			}
-			//std::cout << i << std::endl;
-			//std::cout << std::bitset<8>(bit0) << std::endl;
-			ppu.tile_table[tile_index].bit0[i] = bit0;
-			ppu.tile_table[tile_index].bit1[i] = 0; //bit1;
 		}
 	};
-	load_single_tile(33, 0, ppu);
-
+	//load_single_tile(33, 0, 1, 1, ppu);
+	load_single_tile(33, 1, 7, 4, ppu);
 	//use sprite 32 as a "player":
 	ppu.tile_table[32].bit0 = {
 		0b01111110,
@@ -128,8 +145,8 @@ PlayMode::PlayMode() {
 	ppu.palette_table[7] = {
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
 		glm::u8vec4(0xff, 0xff, 0x00, 0xff),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+		glm::u8vec4(0xff, 0x00, 0x00, 0xff),
+		glm::u8vec4(0xff, 0x00, 0x00, 0xff),
 	};
 
 	//used for the player two sprite:
@@ -158,15 +175,17 @@ PlayMode::PlayMode() {
 
 	//Initialize the players:
 	//again, weapon_idx is player + 1
-	player0.sprite_idx = 0;
-	player0.weapon_idx = 1;
+	player0.sprite_idx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28};
+	player0.weapon_idx = 57;
 	player0.color_index = 7; 
 	player0.weapon_color = 5;
+	player0.dim = glm::vec2(7.0f, 4.0f);
 
-	player1.sprite_idx = 2;
-	player1.weapon_idx = 3;
+	player1.sprite_idx = {29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56};
+	player1.weapon_idx = 58;
 	player1.color_index = 7;
 	player1.weapon_color = 5;
+	player1.dim = glm::vec2(7.0f, 4.0f);
 }
 
 PlayMode::~PlayMode() {
@@ -345,11 +364,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	ppu.background_position.y = int32_t(-0.5f * player1.at.y);
 	//uncessary but I wanted to write a lambda
 	auto player_draw = [](Player &player,	PPU466& ppu) {
-		//draw player
-		ppu.sprites[player.sprite_idx].x = int8_t(player.at.x);
-		ppu.sprites[player.sprite_idx].y = int8_t(player.at.y);
-		//Set the sprite in the tile table, might make it a varaible
-		ppu.sprites[player.sprite_idx].index = 33;
+		//draw player (four sprites in a square)
+		//contains sprites used for the player
 		uint8_t color = 0;
 		if (player.hurt) 
 		{
@@ -357,19 +373,64 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		} else {
 			color = player.color_index;
 		}
-		ppu.sprites[player.sprite_idx].attributes = color;
+
+		//draw player block
+		std::vector < uint8_t > spri_idx = player.sprite_idx;
+		//NOTE: this loop needs to go from negative to positive
+		ppu.sprites[spri_idx[0]].x = uint8_t(player.at.x - 4);
+		ppu.sprites[spri_idx[0]].y = uint8_t(player.at.y + 4);
+		//Set the sprite in the tile table, might make it a varaible
+		ppu.sprites[spri_idx[0]].index = 47;
+		ppu.sprites[spri_idx[0]].attributes = color;
+
+		ppu.sprites[spri_idx[1]].x = uint8_t(player.at.x + 4);
+		ppu.sprites[spri_idx[1]].y = uint8_t(player.at.y + 4);
+		ppu.sprites[spri_idx[1]].index = 48;
+		ppu.sprites[spri_idx[1]].attributes = color;
+
+		ppu.sprites[spri_idx[2]].x = uint8_t(player.at.x - 4);
+		ppu.sprites[spri_idx[2]].y = uint8_t(player.at.y - 4);
+		ppu.sprites[spri_idx[2]].index = 54;
+		ppu.sprites[spri_idx[2]].attributes = color;
+
+		ppu.sprites[spri_idx[3]].x = uint8_t(player.at.x + 4);
+		ppu.sprites[spri_idx[3]].y = uint8_t(player.at.y - 4);
+		ppu.sprites[spri_idx[3]].index = 55;
+		ppu.sprites[spri_idx[3]].attributes = color;
+
+		/*
+		uint8_t count = 0;
+
+		for (uint8_t h = 0; h < player.dim.y; h++) {
+			for (uint8_t w = 0; w < player.dim.x; w++) {
+				//create offset
+				float offset_x = w - player.dim.x / 2.0f;
+				float offset_y = h - player.dim.y / 2.0f;
+				ppu.sprites[spri_idx[count]].x = uint8_t(player.at.x + offset_x*8);
+				ppu.sprites[spri_idx[count]].y = uint8_t(player.at.y + offset_y*8);
+				ppu.sprites[spri_idx[count]].index = 33 + count;
+				ppu.sprites[spri_idx[count]].attributes = color;
+				//std::cout << "x: " << unsigned(ppu.sprites[spri_idx[count]].x) << "   y: " << unsigned(ppu.sprites[spri_idx[count]].y) << "   count:"  << unsigned(33+ count)<< std::endl;
+
+				count++;
+			}
+			//std::cout << "---------------rows: " << unsigned(h) << std::endl;
+		}
+		*/
+
+
 		//draw weapon
-		ppu.sprites[player.weapon_idx].x = int8_t(player.weapon_at.x);
-		ppu.sprites[player.weapon_idx].y = int8_t(player.weapon_at.y);
+		ppu.sprites[player.weapon_idx].x = int8_t(player.at.x);
+		ppu.sprites[player.weapon_idx].y = int8_t(player.at.y);
 		ppu.sprites[player.weapon_idx].index = 32;
 		ppu.sprites[player.weapon_idx].attributes = player.weapon_color;
 	};
 
 	player_draw(player0, ppu);
-	player_draw(player1, ppu);
+	//player_draw(player1, ppu);
 
 	//some other misc sprites:
-	for (uint32_t i = 4; i < 63; ++i) {
+	for (uint32_t i = 59; i < 63; ++i) {
 		/* 
 		* Old Code:
 		float amt = (i + 2.0f * background_fade) / 62.0f;

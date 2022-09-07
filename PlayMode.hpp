@@ -47,10 +47,14 @@ struct PlayMode : Mode {
 		glm::vec2 at = glm::vec2(0.0f, 0.0f);
 		//Player movement direction
 		glm::vec2 direction = glm::vec2(0.0f, 0.0f);
+		//----------------DRAWING RELATED ---------
 		//Pallette index
 		uint8_t color_index = 0;
 		//sprite index
-		uint8_t sprite_idx = 0;
+		//equal to constant between 1 - 28
+		std::vector< uint8_t > sprite_idx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28};
+		//dimensions of sprite
+		glm::vec2 dim = glm::vec2(.0f, 0.0f);
 		//Weapon position
 		glm::vec2 weapon_at = glm::vec2(0.0f, 0.0f);
 		//Weapon sprite is always assumed to be sprite_index + 1

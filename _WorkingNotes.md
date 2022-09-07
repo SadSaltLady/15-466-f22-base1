@@ -52,3 +52,73 @@ load into PPU sprite buffers (ideally?)
 - we will need a dynamic look up function to get the path for our resources
 - we will need a function that is able to parse it
 - we need something (Load) to put it in a usable place
+
+## some really sketchy code as a basis
+REFERENCE-----
+	struct Tile {
+		std::array< uint8_t, 8 > bit0; //<-- controls bit 0 of the color index
+		std::array< uint8_t, 8 > bit1; //<-- controls bit 1 of the color index
+	};
+REFERENCE-----
+struct SpriteAtlas {
+    //idea: take in one big sprite file
+    //constructor that reads from sprite file
+    //takes in a png, and should parese into the three channels
+    //store that data struct in a vector
+
+
+}
+Load< SpriteAtlas > mars_atlas( LoadTagDefault, [&](){
+	SpriteAtlas *ret = new SpriteAtlas(data_path("some data"));
+	lander_sprite = ret->lookup("lander");
+	rock_sprite = ret->lookup("rock");
+});
+
+## how much sprites will I need to make guilty goose...
+1. idle ((4 * 4) + 4) = 20 (optimize = 16)
+2. prep frame optimized = 4
+2. attack optimized = 6
+3. fly optimized = 9 ~ 10
+
+total : (16 + 4 + 6 + 10) * 2 = 36 * 2 = 72 tiles... 
+
+## there should be a github action code that one can run
+
+## new todo now that you're making a fighiting game...
+1. a way to load in large amount of assets & index
+2. new movement mechanic (ie, side ways with a floor )
+3. how to do animation on a time based and not frame-based fashion
+3. figure out a way to author hitbox and hurt box
+
+x: 228   y: 240   count:33
+x: 236   y: 240   count:34
+x: 244   y: 240   count:35
+x: 252   y: 240   count:36
+x: 4   y: 240   count:37
+x: 12   y: 240   count:38
+x: 20   y: 240   count:39
+---------------rows: 0
+x: 228   y: 248   count:40
+x: 236   y: 248   count:41
+x: 244   y: 248   count:42
+x: 252   y: 248   count:43
+x: 4   y: 248   count:44
+x: 12   y: 248   count:45
+x: 20   y: 248   count:46
+---------------rows: 1
+x: 228   y: 0   count:47
+x: 236   y: 0   count:48
+x: 244   y: 0   count:49
+x: 252   y: 0   count:50
+x: 4   y: 0   count:51
+x: 12   y: 0   count:52
+x: 20   y: 0   count:53
+---------------rows: 2
+x: 228   y: 8   count:54
+x: 236   y: 8   count:55
+x: 244   y: 8   count:56
+x: 252   y: 8   count:57
+x: 4   y: 8   count:58
+x: 12   y: 8   count:59
+x: 20   y: 8   count:60
+---------------rows: 3

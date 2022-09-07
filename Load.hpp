@@ -15,6 +15,7 @@
  *     glBindVertexArray(main_mesh->vao);
  * }
  * 
+ * Joyce notes:
  * in other words, Load < T > is a wrapper around a function that returns a T.
  * this in term creates an object T, which can ve referenced from a global scope.
  * 
