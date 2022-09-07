@@ -26,9 +26,8 @@ Load < SpriteAtlas > sprite_master = { LoadTagDefault, [&]() {
 	//fill with empty 
 	ret->images.assign(8, std::vector< glm::u8vec4 >());
 	//load_png(ret->pathtest, &size, &(ret->images[0]), LowerLeftOrigin);
-	size = glm::uvec2(56.0f, 32.0f);
-	load_png(data_path("assets\\attack_56_32.png"), &size, &(ret->images[1]), LowerLeftOrigin);
-	std::cout << "size of attack_56_32.png: " << ret->images[1].size() << std::endl;
+	size = glm::uvec2(16.0f, 16.0f);
+	load_png(data_path("assets\\chicken_16.png"), &size, &(ret->images[1]), LowerLeftOrigin);
 	return ret;
 } };
 
@@ -97,12 +96,11 @@ PlayMode::PlayMode() {
 				//ppu.tile_table[tile_index + w + h * wid] = tile;
 				ppu.tile_table[tile_index + count] = tile;
 				++count;
-				std::cout << "count: " << tile_index + count << std::endl;
 			}
 		}
 	};
 	//load_single_tile(33, 0, 1, 1, ppu);
-	load_single_tile(33, 1, 7, 4, ppu);
+	load_single_tile(33, 1, 2, 2, ppu);
 	//use sprite 32 as a "player":
 	ppu.tile_table[32].bit0 = {
 		0b01111110,
@@ -146,7 +144,7 @@ PlayMode::PlayMode() {
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
 		glm::u8vec4(0xff, 0xff, 0x00, 0xff),
 		glm::u8vec4(0xff, 0x00, 0x00, 0xff),
-		glm::u8vec4(0xff, 0x00, 0x00, 0xff),
+		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
 	};
 
 	//used for the player two sprite:
@@ -175,17 +173,15 @@ PlayMode::PlayMode() {
 
 	//Initialize the players:
 	//again, weapon_idx is player + 1
-	player0.sprite_idx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28};
-	player0.weapon_idx = 57;
+	player0.sprite_idx = {0, 1, 2, 3};
+	player0.weapon_idx = 4;
 	player0.color_index = 7; 
 	player0.weapon_color = 5;
-	player0.dim = glm::vec2(7.0f, 4.0f);
 
-	player1.sprite_idx = {29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56};
-	player1.weapon_idx = 58;
+	player1.sprite_idx = {5, 6, 7, 8};
+	player1.weapon_idx = 9;
 	player1.color_index = 7;
 	player1.weapon_color = 5;
-	player1.dim = glm::vec2(7.0f, 4.0f);
 }
 
 PlayMode::~PlayMode() {
@@ -366,6 +362,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	auto player_draw = [](Player &player,	PPU466& ppu) {
 		//draw player (four sprites in a square)
 		//contains sprites used for the player
+		std::vector < uint8_t > spri_idx = player.sprite_idx;
 		uint8_t color = 0;
 		if (player.hurt) 
 		{
@@ -375,62 +372,39 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		}
 
 		//draw player block
-		std::vector < uint8_t > spri_idx = player.sprite_idx;
-		//NOTE: this loop needs to go from negative to positive
-		ppu.sprites[spri_idx[0]].x = uint8_t(player.at.x - 4);
-		ppu.sprites[spri_idx[0]].y = uint8_t(player.at.y + 4);
-		//Set the sprite in the tile table, might make it a varaible
-		ppu.sprites[spri_idx[0]].index = 47;
+		//top left
+		ppu.sprites[spri_idx[0]].x = uint8_t(player.at.x - 4.0f);
+		ppu.sprites[spri_idx[0]].y = uint8_t(player.at.y + 4.0f);
+		ppu.sprites[spri_idx[0]].index = 33;
 		ppu.sprites[spri_idx[0]].attributes = color;
-
-		ppu.sprites[spri_idx[1]].x = uint8_t(player.at.x + 4);
-		ppu.sprites[spri_idx[1]].y = uint8_t(player.at.y + 4);
-		ppu.sprites[spri_idx[1]].index = 48;
+		//top right
+		ppu.sprites[spri_idx[1]].x = uint8_t(player.at.x + 4.0f);
+		ppu.sprites[spri_idx[1]].y = uint8_t(player.at.y + 4.0f);
+		ppu.sprites[spri_idx[1]].index = 34;
 		ppu.sprites[spri_idx[1]].attributes = color;
-
-		ppu.sprites[spri_idx[2]].x = uint8_t(player.at.x - 4);
-		ppu.sprites[spri_idx[2]].y = uint8_t(player.at.y - 4);
-		ppu.sprites[spri_idx[2]].index = 54;
+		//bottom left
+		ppu.sprites[spri_idx[2]].x = uint8_t(player.at.x - 4.0f);
+		ppu.sprites[spri_idx[2]].y = uint8_t(player.at.y - 4.0f);
+		ppu.sprites[spri_idx[2]].index = 35;
 		ppu.sprites[spri_idx[2]].attributes = color;
-
-		ppu.sprites[spri_idx[3]].x = uint8_t(player.at.x + 4);
-		ppu.sprites[spri_idx[3]].y = uint8_t(player.at.y - 4);
-		ppu.sprites[spri_idx[3]].index = 55;
+		//bottom right
+		ppu.sprites[spri_idx[3]].x = uint8_t(player.at.x + 4.0f);
+		ppu.sprites[spri_idx[3]].y = uint8_t(player.at.y - 4.0f);
+		ppu.sprites[spri_idx[3]].index = 36;
 		ppu.sprites[spri_idx[3]].attributes = color;
 
-		/*
-		uint8_t count = 0;
-
-		for (uint8_t h = 0; h < player.dim.y; h++) {
-			for (uint8_t w = 0; w < player.dim.x; w++) {
-				//create offset
-				float offset_x = w - player.dim.x / 2.0f;
-				float offset_y = h - player.dim.y / 2.0f;
-				ppu.sprites[spri_idx[count]].x = uint8_t(player.at.x + offset_x*8);
-				ppu.sprites[spri_idx[count]].y = uint8_t(player.at.y + offset_y*8);
-				ppu.sprites[spri_idx[count]].index = 33 + count;
-				ppu.sprites[spri_idx[count]].attributes = color;
-				//std::cout << "x: " << unsigned(ppu.sprites[spri_idx[count]].x) << "   y: " << unsigned(ppu.sprites[spri_idx[count]].y) << "   count:"  << unsigned(33+ count)<< std::endl;
-
-				count++;
-			}
-			//std::cout << "---------------rows: " << unsigned(h) << std::endl;
-		}
-		*/
-
-
 		//draw weapon
-		ppu.sprites[player.weapon_idx].x = int8_t(player.at.x);
-		ppu.sprites[player.weapon_idx].y = int8_t(player.at.y);
+		ppu.sprites[player.weapon_idx].x = int8_t(player.weapon_at.x);
+		ppu.sprites[player.weapon_idx].y = int8_t(player.weapon_at.y);
 		ppu.sprites[player.weapon_idx].index = 32;
 		ppu.sprites[player.weapon_idx].attributes = player.weapon_color;
 	};
 
 	player_draw(player0, ppu);
-	//player_draw(player1, ppu);
+	player_draw(player1, ppu);
 
 	//some other misc sprites:
-	for (uint32_t i = 59; i < 63; ++i) {
+	for (uint32_t i = 10; i < 63; ++i) {
 		/* 
 		* Old Code:
 		float amt = (i + 2.0f * background_fade) / 62.0f;
