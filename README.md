@@ -1,8 +1,8 @@
-# (TODO: your game's title)
+# Guilty Gull
 
-Author: (TODO: your name)
+Author: Joyce Zhang
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: It's like Guilty Gear, but it's seagulls. It's a very minimalist fighting game :)
 
 Screen Shot:
 
