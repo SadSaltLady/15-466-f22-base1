@@ -42,10 +42,10 @@ Load < SpriteAtlas > sprite_master = { LoadTagDefault, [&]() {
 	//fill with empty 
 	ret->images.assign(2, std::vector< glm::u8vec4 >());
 	//load_png(ret->pathtest, &size, &(ret->images[0]), LowerLeftOrigin);
-	load_png(data_path("assets\\attack_56_128.png"), &size, &(ret->images[2]), LowerLeftOrigin);
+	load_png(data_path("attack_56_128.png"), &size, &(ret->images[2]), LowerLeftOrigin);
 	size = glm::uvec2(8.f, 8.f);
-	load_png(data_path("assets\\nothing.png"), &size, &(ret->images[0]), LowerLeftOrigin);
-	load_png(data_path("assets\\floor.png"), &size, &(ret->images[1]), LowerLeftOrigin);
+	load_png(data_path("nothing.png"), &size, &(ret->images[0]), LowerLeftOrigin);
+	load_png(data_path("floor.png"), &size, &(ret->images[1]), LowerLeftOrigin);
 	return ret;
 } };
 
@@ -344,8 +344,7 @@ void PlayMode::update(float elapsed) {
 			}
 		}
 		};
-	movement_handler(player0, p0_left, p0_right, p0_up, p0_atc, elapsed);
-	movement_handler(player1, p1_left, p1_right, p1_up, p1_atc, elapsed);
+
 
 	auto orientation_handler = [&] (Player &p0, Player &p1) {
 		if (p0.at.x < p1.at.x) {
@@ -377,9 +376,8 @@ void PlayMode::update(float elapsed) {
 		if (player.is_attacking) {
 			player.animation = 3;
 		}
-	};
-	animation_handler(player0);
-	animation_handler(player1);
+	};	
+
 
 	//check for collisions
 	auto collision_handler = [&](Player &attack, Player &defend) {
@@ -405,8 +403,17 @@ void PlayMode::update(float elapsed) {
 			}
 		} 
 	};	
-	collision_handler(player0, player1);
-	collision_handler(player1, player0);
+	if (!player0.is_dead) {
+		movement_handler(player0, p0_left, p0_right, p0_up, p0_atc, elapsed);
+		animation_handler(player0);
+		collision_handler(player0, player1);
+	} 
+
+	if (!player1.is_dead) {
+		movement_handler(player1, p1_left, p1_right, p1_up, p1_atc, elapsed);
+		animation_handler(player1);
+		collision_handler(player1, player0);
+	}
 
 	//reset button press counters:
 	p0_left.downs = 0;
@@ -450,7 +457,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	ppu.background_position.x = int32_t(-0.5f * player1.at.x);
 	ppu.background_position.y = int32_t(-0.5f * player1.at.y);
 	//uncessary but I wanted to write a lambda
-	auto player_draw = [](Player &player,	PPU466& ppu) {
+	auto player_draw = [](Player &player, Player &opp, PPU466& ppu) {
 		//draw player (four sprites in a square)
 		//contains sprites used for the player
 		uint8_t color = player.color_index;
@@ -499,12 +506,23 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 					count++;
 				}
 			}
-		
+		}
+
+		if (opp.is_dead) {
+			//draw three block ontop of player
+			count = 0;
+			for (uint8_t i = 0; i < 3; i++) {
+				ppu.sprites[255-i].x = uint8_t(player.at.x + (i - 1)*8);
+				ppu.sprites[255-i].y = uint8_t(player.at.y - 8);
+				ppu.sprites[255-i].index = 4 + offset + count;
+				ppu.sprites[255-i].attributes = color;
+				count++;
+			}
 		}
 	};
 
-	player_draw(player0, ppu);
-	player_draw(player1, ppu);
+	player_draw(player0, player1, ppu);
+	player_draw(player1, player0, ppu);
 
 	//some other misc sprites:
 	for (uint32_t i = 59; i < 63; ++i) {

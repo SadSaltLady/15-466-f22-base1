@@ -12,10 +12,7 @@
 #include <iostream>
 
 struct SpriteAtlas {
-		int sprite_count = 0;
-		std::string pathtest = "";
 		//array of images 
-		//image = vector< glm::u8vec4 >
 		std::vector< std::vector< glm::u8vec4 > > images = {};
 };
 

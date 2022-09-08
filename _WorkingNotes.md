@@ -90,35 +90,3 @@ total : (16 + 4 + 6 + 10) * 2 = 36 * 2 = 72 tiles...
 3. how to do animation on a time based and not frame-based fashion
 3. figure out a way to author hitbox and hurt box
 
-x: 228   y: 240   count:33
-x: 236   y: 240   count:34
-x: 244   y: 240   count:35
-x: 252   y: 240   count:36
-x: 4   y: 240   count:37
-x: 12   y: 240   count:38
-x: 20   y: 240   count:39
----------------rows: 0
-x: 228   y: 248   count:40
-x: 236   y: 248   count:41
-x: 244   y: 248   count:42
-x: 252   y: 248   count:43
-x: 4   y: 248   count:44
-x: 12   y: 248   count:45
-x: 20   y: 248   count:46
----------------rows: 1
-x: 228   y: 0   count:47
-x: 236   y: 0   count:48
-x: 244   y: 0   count:49
-x: 252   y: 0   count:50
-x: 4   y: 0   count:51
-x: 12   y: 0   count:52
-x: 20   y: 0   count:53
----------------rows: 2
-x: 228   y: 8   count:54
-x: 236   y: 8   count:55
-x: 244   y: 8   count:56
-x: 252   y: 8   count:57
-x: 4   y: 8   count:58
-x: 12   y: 8   count:59
-x: 20   y: 8   count:60
----------------rows: 3
