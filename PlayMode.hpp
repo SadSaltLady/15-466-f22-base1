@@ -12,10 +12,7 @@
 #include <iostream>
 
 struct SpriteAtlas {
-		int sprite_count = 0;
-		std::string pathtest = "";
 		//array of images 
-		//image = vector< glm::u8vec4 >
 		std::vector< std::vector< glm::u8vec4 > > images = {};
 };
 
@@ -34,7 +31,7 @@ struct PlayMode : Mode {
 	struct Button {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} p0_left, p0_right, p0_down, p0_up, p1_left, p1_right, p1_down, p1_up;
+	} p0_left, p0_right, p0_up, p0_atc, p1_left, p1_right, p1_up, p1_atc;
 
 	//some weird background animation:
 	float background_fade = 0.0f;
@@ -45,8 +42,19 @@ struct PlayMode : Mode {
 	struct Player {
 		//Player position
 		glm::vec2 at = glm::vec2(0.0f, 0.0f);
-		//Player movement direction
-		glm::vec2 direction = glm::vec2(0.0f, 0.0f);
+		//Player direction = acceleration
+		glm::vec2 acceleration = glm::vec2(0.0f, -5.0f);
+		//player velocity
+		glm::vec2 velocity = glm::vec2(0.0f, 0.0f);
+		//player health
+		uint8_t health = 3;
+		//----------------BOOLEANS----------------
+		bool on_ground = true;
+		bool on_right = false;
+		bool hurt = false;
+		bool is_attacking = false;
+		bool can_attack = true;
+		bool is_dead = false;
 		//----------------DRAWING RELATED ---------
 		//Pallette index
 		uint8_t color_index = 0;
@@ -61,8 +69,14 @@ struct PlayMode : Mode {
 		uint8_t weapon_idx = 0;
 		//Weapon color
 		uint8_t weapon_color = 0;
-		//status
-		bool hurt = false;
+		//-----------------ANIM STATS----------------
+		//0 = idle, 1 = walk, 2 = jump, 3 = attack
+		uint8_t animation = 0;
+		//-----------------TIMERS----------------
+		float anim_timer = 0.0f;
+		float attack_timer = 0.0f;
+		float hurt_timer = 0.0f;
+		float attack_cooldown = 0.0f;
 	}player0, player1;
 
 	//----- drawing handled by PPU466 -----
